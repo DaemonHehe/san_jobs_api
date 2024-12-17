@@ -125,16 +125,17 @@ app.post("/jobs", (req, res) => {
     function (err, results, fields) {
       if (err) {
         console.error("Error in POST /jobs:", err);
-        res.status(500).send("Error adding job");
+        res.status(500).send({message: "Error adding job"});
       } else {
-        res.status(200).send(results);
+        res.status(201).send({message: "Job created successfully", id: results.insertId}); // Respond with 201 and id
       }
     }
   );
 });
 
 // Update a job
-app.put("/jobs", (req, res) => {
+app.put("/jobs/:id", (req, res) => {
+  const jobId = req.params.id;
   connection.query(
     "UPDATE `jobs` SET `company`=?, `logourl`=?, `isMark`=?, `title`=?, `location`=?, `time`=?, `requirements`=?, `category`=? WHERE id = ?",
     [
@@ -146,31 +147,32 @@ app.put("/jobs", (req, res) => {
       req.body.time,
       req.body.requirements,
       req.body.category,
-      req.body.id,
+      jobId,
     ],
     function (err, results, fields) {
-      if (err) {
+       if (err) {
         console.error("Error in PUT /jobs:", err);
-        res.status(500).send("Error updating job");
+        res.status(500).send({ message: "Error updating job" });
       } else {
-        res.send(results);
+       res.status(200).send({ message: "Job updated successfully", affectedRows: results.affectedRows });
       }
     }
   );
 });
 
 // Delete a job
-app.delete("/jobs", (req, res) => {
+app.delete("/jobs/:id", (req, res) => {
+  const jobId = req.params.id;
   connection.query(
     "DELETE FROM `jobs` WHERE id = ?",
-    [req.body.id],
+    [jobId],
     function (err, results, fields) {
       if (err) {
-        console.error("Error in DELETE /jobs:", err);
-        res.status(500).send("Error deleting job");
-      } else {
-        res.send(results);
-      }
+          console.error("Error in DELETE /jobs:", err);
+           res.status(500).send({ message: "Error deleting job" });
+        } else {
+          res.status(200).send({ message: "Job deleted successfully", affectedRows: results.affectedRows });
+        }
     }
   );
 });
